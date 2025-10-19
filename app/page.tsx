@@ -130,7 +130,7 @@ export default function Home() {
               🐾 CA 
             </h3>
             <p className="ca-text text-sm md:text-base font-bold tracking-widest mt-2 text-center opacity-90 select-none">
-              0x9aC3bA0E1b2F9eCFeD2bC9f7E4D21d44fA11A23999
+              0x9aC3bA0E1b2F9eC
             </p>
             <p className="text-xs text-white/70 mt-1 italic">(Click to copy)</p>
           </div>

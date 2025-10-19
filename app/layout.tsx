@@ -25,7 +25,7 @@ const pacifico = Pacifico({
 /* === 💖 Metadata SEO + OpenGraph Final === */
 export const metadata: Metadata = {
   metadataBase: new URL("https://pawpawthecutest.art"),
-  title: "🐾 PAWPAW | The Cutest Meme Coin in the Solana Universe 💖",
+  title: " PAWPAW ",
   description:
     "Welcome to Candy Land 🍭 — Home of PAWPAW, the cutest meme coin in the Solana universe. Join a community powered by love, creativity, and fun! ✨",
   keywords: [
