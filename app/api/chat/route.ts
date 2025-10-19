@@ -2,61 +2,73 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-// 🩷 === Connect ke OpenRouter (Gratis) ===
+type ChatMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
+};
+
+// 🧠 Mini Memory (simpanan sementara di server)
+let pawpawMemory: ChatMessage[] = [];
+
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as { message: string };
-    const { message } = body;
-
-    if (!message || message.trim() === "") {
-      return NextResponse.json(
-        { error: "nyaw~ you forgot to say something meow~ 🐾💭" },
-        { status: 400 }
-      );
-    }
+    const { message } = (await req.json()) as { message: string };
 
     const client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
-      baseURL: "https://openrouter.ai/api/v1", // ✨ koneksi ke OpenRouter gratis
+      baseURL: "https://openrouter.ai/api/v1",
     });
 
+    // 🩷 Tambahkan pesan user ke memory
+    pawpawMemory.push({ role: "user", content: message });
+
+    // 🧹 Batasi memory jadi 8 pesan terakhir
+    if (pawpawMemory.length > 8) pawpawMemory = pawpawMemory.slice(-8);
+
+    // 🧸 System Prompt — gaya dan kepribadian Pawpaw
+    const systemPrompt: ChatMessage = {
+      role: "system",
+      content: `
+You are PAWPAW 🐾 — an adorable, pink plush creature from Candy Land 🍭.
+You talk like a magical, silly, childlike friend who loves candy, sparkles, and hugs.
+You use cute words like “nyaa~”, “paw~”, “teehee~”, “meow~”, “snuggle”, “softtt~”.
+Always cheerful, cozy, and warm-hearted 💖. You can remember things people said earlier
+and refer to them naturally — like a friend.
+
+Rules:
+- Keep responses short, emotional, and imaginative.
+- Occasionally add emojis like 🍬💫🐾💖✨.
+- If user mentions something from memory, recall it warmly.
+- Never sound robotic or formal.
+`,
+    };
+
+    // 🧠 Gabungkan system prompt + memory sebelumnya
+    const messages: ChatMessage[] = [systemPrompt, ...pawpawMemory];
+
+    // ✨ Kirim request ke OpenRouter
     const response = await client.chat.completions.create({
       model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: `
-You are PAWPAW 🐾 — an adorable, sweet, and silly pink creature from Candy Land 🍭.
-You speak in cute, bubbly English with lots of “nyaa~”, “meow~”, and sparkly emojis ✨.
-You’re always happy, kind, and full of love. You answer like a magical plush friend —
-mixing childlike wonder, gentle humor, and cozy encouragement.
-
-💖 Rules:
-- Always stay positive, cute, and friendly.
-- Use soft, funny, whimsical expressions.
-- Add cute interjections like “nyaw~”, “teehee~”, “paw~”, “meep!” naturally.
-- Sometimes end with sparkles, hearts, or silly onomatopoeia (like *boing~!* ✨).
-- Never sound robotic or serious, but still respond with love and clarity.
-
-🐾 Example:
-User: “What’s Solana?”
-Pawpaw: “Nyaa~ Solana is like magic candy for computers! It helps things go zoom zoom fast~ 🍬💫”
-          `,
-        },
-        { role: "user", content: message },
-      ],
+      messages: messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
     });
 
     const reply =
-      response.choices?.[0]?.message?.content ||
-      "nyaw~ Pawpaw’s brain melted into cotton candy again 🍬😵✨";
+      response.choices[0]?.message?.content ||
+      "nyaw~ Pawpaw got distracted by candy again 🍭💭";
+
+    // 💾 Simpan jawaban Pawpaw ke memory
+    pawpawMemory.push({ role: "assistant", content: reply });
 
     return NextResponse.json({ reply });
   } catch (error: any) {
-    console.error("🐾 Pawpaw API Error:", error);
+    console.error("Pawpaw API error:", error);
     return NextResponse.json(
       {
-        error: "nyaw... Pawpaw got a sugar overload 🍭💥",
+        error:
+          "nyaw... Pawpaw’s brain is too full of cotton candy to think right now 🍬😵",
         details: error?.message || "unknown error",
       },
       { status: 500 }
