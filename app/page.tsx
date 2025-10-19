@@ -358,7 +358,7 @@ export default function Home() {
 
         <div className="flex flex-wrap justify-center gap-8">
           {[
-            { name: "X", icon: "/images/xlogo.png", link: "https:/x.com/pawthecutest/" },
+            { name: "X", icon: "/images/xlogo.png", link:"https://x.com/pawthecutest " },
             { name: "DEXSCREENER", icon: "/images/dex.png", link: "https://dexscreener.com/" },
             { name: "PUMP.FUN", icon: "/images/pump.png", link: "https://pump.fun/" },
           ].map((item, i) => (
