@@ -1,26 +1,262 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* === 🐾 PAWPAW THEME VARIABLES === */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --pawpaw-pink: #ff4da6;
+  --pawpaw-pink-soft: #ff9cd8;
+  --pawpaw-light: #ffc3e0;
+  --pawpaw-shadow: rgba(255, 128, 200, 0.6);
+  --pawpaw-text: #3a2b33;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* === 💖 GLOBAL FONT & BASE === */
+body {
+  @apply text-[var(--pawpaw-text)] font-sans antialiased;
+  background-color: #fff1fa;
+  cursor: none !important;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+button, a, input, textarea, select, label {
+  cursor: none !important;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* === 🩷 BRAND FONT STYLE === */
+.pawpaw-font {
+  font-family: 'Baloo Bhai 2', sans-serif;
+  font-weight: 700;
+  background: linear-gradient(180deg, #ffb6d9 0%, #ff4da6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0 2px 4px rgba(255, 128, 200, 0.4),
+    0 4px 10px rgba(255, 160, 220, 0.6);
+}
+
+/* === 🌈 BUTTON STYLE === */
+.pawpaw-btn {
+  background: linear-gradient(90deg, var(--pawpaw-pink), var(--pawpaw-light));
+  box-shadow: 0 0 25px var(--pawpaw-shadow);
+  transition: all 0.4s ease;
+  color: white;
+  border-radius: 9999px;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+}
+.pawpaw-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 45px var(--pawpaw-shadow);
+}
+
+/* === ✨ ANIMATIONS === */
+@keyframes pawpaw-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-float { animation: pawpaw-float 4s ease-in-out infinite; }
+
+@keyframes pawpaw-breath {
+  0%, 100% { filter: drop-shadow(0 0 20px rgba(255,150,220,0.5)); }
+  50% { filter: drop-shadow(0 0 40px rgba(255,190,240,0.8)); }
+}
+.animate-pawpaw-breath { animation: pawpaw-breath 4s ease-in-out infinite; }
+
+/* === 🌸 SECTION ANIMATION === */
+.section-animate {
+  animation: fadeUp 1.2s ease-in-out both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === 🪞 HERO / THE CUTEST TEXT === */
+.thecutest-handdrawn-text {
+  font-family: 'Pacifico', cursive;
+  text-transform: capitalize;
+  font-size: clamp(2.8rem, 6vw, 6.5rem);
+  letter-spacing: 1px;
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(180deg, #ffe9a1 0%, #ffd54f 30%, #ffb83f 60%, #ff9bc2 90%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0px 1px 1px #fff3d1,
+    0px 2px 2px rgba(255, 200, 120, 0.8),
+    0px 4px 4px rgba(255, 160, 90, 0.5),
+    0px 0px 25px rgba(255, 180, 130, 0.4);
+  animation: handdrawnGoldBreath 6s ease-in-out infinite;
+}
+
+@keyframes handdrawnGoldBreath {
+  0%, 100% { filter: drop-shadow(0 0 15px rgba(255, 210, 160, 0.4)); }
+  50% { filter: drop-shadow(0 0 30px rgba(255, 235, 200, 0.9)); }
+}
+
+/* === 💫 CA GOLD TEXT === */
+.ca-text {
+  background: linear-gradient(180deg, #fff5cc 0%, #ffd700 25%, #ffcf70 50%, #ffb84d 75%, #b8860b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow:
+    0px 1px 0px #fff9d6,
+    0px 2px 1px rgba(255, 190, 90, 0.8),
+    0px 4px 3px rgba(180, 120, 40, 0.4);
+  filter: drop-shadow(0 0 12px rgba(255, 215, 130, 0.6));
+  animation: goldBreath 5s ease-in-out infinite;
+}
+@keyframes goldBreath {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 215, 130, 0.4)); }
+  50% { filter: drop-shadow(0 0 25px rgba(255, 240, 200, 0.8)); }
+}
+
+/* === 🧱 NAV FIX === */
+nav {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999 !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* === 🌈 SCROLLBAR === */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: rgba(255, 230, 245, 0.1); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff7fcf, #ff4da6);
+  border-radius: 10px;
+}
+
+/* === 🌟 HERO GLOW (OPTIONAL) === */
+.hero-glow {
+  background: radial-gradient(circle at center, rgba(255, 128, 200, 0.25) 0%, transparent 70%);
+  filter: blur(100px);
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* === 🩵 MOBILE OPTIMIZATION === */
+@media (max-width: 768px) {
+  .pawpaw-font {
+    text-shadow:
+      0 1px 2px rgba(255, 128, 200, 0.4),
+      0 3px 5px rgba(255, 160, 220, 0.5);
+  }
+
+  .pawpaw-btn {
+    padding: 0.5rem 1.1rem;
+    font-size: 0.9rem;
+  }
+
+  .thecutest-handdrawn-text {
+    font-size: clamp(2.2rem, 6vw, 4.5rem);
+  }
+}
+@keyframes pawpaw-breath {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(255,180,230,0.5));
+  }
+  50% {
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 40px rgba(255,210,250,0.9));
+  }
+}
+@keyframes pawpaw-breath {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(255,170,230,0.4));
+  }
+  50% {
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 45px rgba(255,200,250,0.9));
+  }
+}
+@keyframes goldPinkBreath {
+  0%, 100% {
+    filter: drop-shadow(0 0 25px rgba(255,180,230,0.6))
+            drop-shadow(0 0 45px rgba(255,210,250,0.6))
+            drop-shadow(0 0 60px rgba(255,235,255,0.7));
+  }
+  50% {
+    filter: drop-shadow(0 0 60px rgba(255,220,240,0.9))
+            drop-shadow(0 0 90px rgba(255,190,250,1))
+            drop-shadow(0 0 120px rgba(255,240,250,1));
+  }
+}
+@keyframes goldBreath {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(255, 220, 160, 0.5))
+            drop-shadow(0 0 20px rgba(255, 190, 90, 0.6))
+            drop-shadow(0 0 35px rgba(255, 160, 220, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(255, 240, 200, 0.8))
+            drop-shadow(0 0 45px rgba(255, 210, 250, 0.9))
+            drop-shadow(0 0 70px rgba(255, 230, 255, 1));
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.animate-goldBreath {
+  animation: goldBreath 6s ease-in-out infinite;
 }
+/* 💫 Animasi refleksi kaca lembut */
+@keyframes shine {
+  0% {
+    transform: translateX(-150%);
+  }
+  50% {
+    transform: translateX(150%);
+  }
+  100% {
+    transform: translateX(150%);
+  }
+}
+
+.animate-shine {
+  animation: shine 4s linear infinite;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 40%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.3) 60%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+}
+/* 💖 Animasi teks “breathing light” lembut */
+@keyframes breath {
+  0% {
+    opacity: 0.8;
+    text-shadow: 0 0 8px rgba(255, 180, 240, 0.4);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 18px rgba(255, 200, 250, 0.7);
+  }
+  100% {
+    opacity: 0.8;
+    text-shadow: 0 0 8px rgba(255, 180, 240, 0.4);
+  }
+}
+
+.animate-breath {
+  animation: breath 3s ease-in-out infinite;
+}
+
