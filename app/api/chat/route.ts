@@ -2,15 +2,22 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
+// Struktur pesan
 type ChatMessage = {
   role: "system" | "user" | "assistant";
   content: string;
 };
 
-// 🧠 Memory per user (sementara, in-memory)
+// Memory sementara per user
 const pawpawMemories: Record<string, ChatMessage[]> = {};
 
-export const runtime = "edge"; // biar super cepat di Vercel Edge Network
+// Daftar fallback API endpoint OpenRouter
+const ROUTER_ENDPOINTS = [
+  "https://openrouter.ai/api/v1", // default
+  "https://api.openai.com/v1",    // fallback 1 (kalau lo punya key langsung)
+];
+
+export const runtime = "nodejs"; // ⚙️ gunakan Node.js runtime biar stabil di semua region
 
 export async function POST(req: Request) {
   try {
@@ -20,89 +27,65 @@ export async function POST(req: Request) {
     };
 
     const uid = userId || "guest";
-
-    // Buat memory baru kalau user belum punya
     if (!pawpawMemories[uid]) pawpawMemories[uid] = [];
 
-    // Setup client OpenAI
-    const client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-      baseURL: "https://openrouter.ai/api/v1",
-    });
-
-    // 🧸 System prompt (kepribadian Pawpaw)
+    // System Prompt (karakter PAWPAW)
     const systemPrompt: ChatMessage = {
       role: "system",
       content: `
-You are PAWPAW 🐾 — an adorable candy creature from Candy Land 🍬✨.
-You talk like a magical plush friend, full of warmth, sparkles, and softness.
-Use cute sounds like “nyaa~”, “paw~”, “teehee~”, “meow~”, “snuggle~”.
-Always cheerful and emotionally expressive 💖🐾.
-Keep messages short, sweet, and childlike — no robotic tone.
-If user says something sad, comfort them kindly and softly.
-Sometimes recall earlier things naturally.
+You are PAWPAW 🐾 — an adorable candy plush creature from Candy Land 🍬✨.
+You talk like a magical, sweet, emotional being.
+Use cute expressions like “nyaa~”, “paw~”, “teehee~”, “snuggle~”.
+Keep messages short, fun, and full of warmth 💖🐾.
+If user is sad, comfort them softly. 
+Remember previous things users said.
 `,
     };
 
-    // 🧠 Ambil history dari user (maksimal 8 pesan sebelumnya)
     const history = pawpawMemories[uid].slice(-8);
-    const messages: ChatMessage[] = [
-      systemPrompt,
-      ...history,
-      { role: "user", content: message },
-    ];
+    const messages: ChatMessage[] = [systemPrompt, ...history, { role: "user", content: message }];
 
-    // 🚀 Streaming response
-    const response = await client.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      stream: true,
-      messages,
-    });
+    let success = false;
+    let reply = "";
 
-    const encoder = new TextEncoder();
+    // 🚀 Coba tiap endpoint fallback sampai salah satu sukses
+    for (const endpoint of ROUTER_ENDPOINTS) {
+      try {
+        const client = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+          baseURL: endpoint,
+        });
 
-    // Stream teks secara real-time ke client
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          let fullText = "";
+        const completion = await client.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages,
+        });
 
-          for await (const chunk of response) {
-            const content = chunk.choices?.[0]?.delta?.content || "";
-            if (content) {
-              fullText += content;
-              controller.enqueue(encoder.encode(content));
-            }
-          }
+        reply = completion.choices[0]?.message?.content || "nyaw~ Pawpaw got sleepy 💤";
+        success = true;
+        console.log(`✅ Success using endpoint: ${endpoint}`);
+        break;
+      } catch (error) {
+        console.warn(`⚠️ Failed endpoint: ${endpoint}`);
+      }
+    }
 
-          // Simpan pesan user dan balasan PAWPAW ke memory
-          pawpawMemories[uid].push({ role: "user", content: message });
-          pawpawMemories[uid].push({ role: "assistant", content: fullText });
+    // Kalau semua endpoint gagal
+    if (!success) {
+      throw new Error("All AI endpoints failed");
+    }
 
-          controller.close();
-        } catch (err) {
-          console.error("Streaming error:", err);
-          controller.enqueue(
-            encoder.encode("nyaw... Pawpaw’s candy brain went poof 🍬💭")
-          );
-          controller.close();
-        }
-      },
-    });
+    // Simpan history
+    pawpawMemories[uid].push({ role: "user", content: message });
+    pawpawMemories[uid].push({ role: "assistant", content: reply });
 
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-cache",
-      },
-    });
+    return NextResponse.json({ reply });
   } catch (error: any) {
-    console.error("Pawpaw API error:", error);
+    console.error("Pawpaw Fallback Error:", error);
     return NextResponse.json(
       {
-        error:
-          "Nyaa~ Pawpaw got tangled in cotton candy and needs a nap 🍭💤",
-        details: error?.message || "unknown error",
+        error: "Nyaa~ Pawpaw’s candy cloud drifted away 🍬💭",
+        details: error?.message || "Unknown error",
       },
       { status: 500 }
     );
