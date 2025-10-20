@@ -12,6 +12,16 @@ export default function ChatWithPawpaw() {
   const sendMessage = async () => {
     if (!input.trim()) return;
 
+    const userId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("pawpaw_user") ||
+          (() => {
+            const id = `paw-${Math.random().toString(36).slice(2)}`;
+            localStorage.setItem("pawpaw_user", id);
+            return id;
+          })()
+        : "guest";
+
     const newMessages = [...messages, { role: "user", content: input }];
     setMessages(newMessages);
     setInput("");
@@ -21,15 +31,23 @@ export default function ChatWithPawpaw() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: input, userId }),
       });
 
-      const data = await res.json();
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: data.reply || "nyaw~ Pawpaw is sleepy 💤" },
-      ]);
+      if (!res.body) throw new Error("No response body");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let partial = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        partial += decoder.decode(value, { stream: true });
+        setMessages([...newMessages, { role: "assistant", content: partial }]);
+      }
     } catch (err) {
+      console.error(err);
       setMessages([
         ...newMessages,
         { role: "assistant", content: "Nyaa~ Pawpaw’s candy brain froze 🧊💔" },
@@ -44,7 +62,7 @@ export default function ChatWithPawpaw() {
       id="chat"
       className="relative flex flex-col items-center justify-center w-full py-12 text-center"
     >
-      {/* 🌸 Panel Gaya CA */}
+      {/* 🌸 Panel utama */}
       <div
         className="ca-panel cursor-none select-none px-10 py-6 rounded-2xl backdrop-blur-xl 
                    bg-white/10 border border-white/20 shadow-[0_0_40px_rgba(255,150,210,0.3)] 
@@ -60,7 +78,7 @@ export default function ChatWithPawpaw() {
           🐾 CHAT WITH PAWPAW 💬
         </h3>
 
-        {/* ✨ Pawpaw Character */}
+        {/* ✨ Pawpaw Avatar */}
         <motion.div
           className="relative w-[120px] h-[120px] mb-6"
           animate={{
@@ -81,12 +99,11 @@ export default function ChatWithPawpaw() {
           />
         </motion.div>
 
-        {/* 💬 Chat Box */}
+        {/* 💬 Chat box */}
         <div
           className="w-[95%] md:w-[700px] bg-white/10 backdrop-blur-xl rounded-3xl 
                      border border-white/20 shadow-[0_0_30px_rgba(255,180,240,0.4)] p-6 relative overflow-hidden"
         >
-          {/* ✨ Background shimmer overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-30 animate-shimmer pointer-events-none"></div>
 
           {/* Chat Messages */}
@@ -104,7 +121,6 @@ export default function ChatWithPawpaw() {
               >
                 {msg.content}
 
-                {/* ✨ Bubble glow effect for Pawpaw messages */}
                 {msg.role === "assistant" && (
                   <motion.span
                     className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0"
@@ -121,7 +137,7 @@ export default function ChatWithPawpaw() {
               </motion.div>
             ))}
 
-            {/* 🍭 Pawpaw Thinking Bubble */}
+            {/* 🍭 Pawpaw Thinking */}
             <AnimatePresence>
               {loading && (
                 <motion.div
@@ -142,7 +158,7 @@ export default function ChatWithPawpaw() {
             </AnimatePresence>
           </div>
 
-          {/* Input Area */}
+          {/* Input area */}
           <div className="flex mt-4 relative z-10">
             <input
               type="text"
